@@ -116,3 +116,34 @@ jobs:
           push: true
           tags: ${{ steps.meta-frontend.outputs.tags }}
           labels: ${{ steps.meta-frontend.outputs.labels }}
+
+  deploy:
+    name: Deploy to production
+    runs-on: self-hosted
+
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    needs:
+      - docker-build
+
+    steps:
+      - name: Deploy application
+        run: |
+          cd ~/flowtodo-deployment
+
+          export IMAGE_TAG="sha-${GITHUB_SHA}"
+
+          echo "Deploying ${IMAGE_TAG}"
+
+          docker compose pull
+          docker compose up -d
+
+          echo "Waiting for backend..."
+          sleep 10
+
+          docker compose ps
+
+          echo "Running health check..."
+          curl -f http://localhost/api/health
+
+          echo "Deployment successful."
