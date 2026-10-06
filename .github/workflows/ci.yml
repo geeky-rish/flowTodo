@@ -84,7 +84,7 @@ jobs:
         with:
           images: ghcr.io/${{ github.repository_owner }}/flowtodo-backend
           tags: |
-            type=sha
+            type=sha,format=long
             type=raw,value=latest,enable={{is_default_branch}}
 
       - name: Extract Docker metadata - Frontend
@@ -93,7 +93,7 @@ jobs:
         with:
           images: ghcr.io/${{ github.repository_owner }}/flowtodo-frontend
           tags: |
-            type=sha
+            type=sha,format=long
             type=raw,value=latest,enable={{is_default_branch}}
 
       - name: Set up Docker Buildx
