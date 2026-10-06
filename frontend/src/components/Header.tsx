@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, Plus, Moon, Sun, Monitor, Menu, Zap, X } from 'lucide-react';
+import { Search, Plus, Moon, Sun, Monitor, Menu, Zap, X, LogOut } from 'lucide-react';
 import { useTheme } from '@/hooks/useTheme';
 import { taskApi } from '@/services/api';
+import { useAuth } from '@/context/AuthContext';
 import { cn, formatDate } from '@/utils';
 import type { Task } from '@/types';
 
@@ -15,12 +16,13 @@ type ThemeOption = 'light' | 'dark' | 'system';
 
 export function Header({ onAddTask, onMenuToggle }: HeaderProps) {
   const { theme, setTheme } = useTheme();
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
   const [searchOpen, setSearchOpen] = useState(false);
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<Task[]>([]);
   const [searching, setSearching] = useState(false);
   const searchRef = useRef<HTMLInputElement>(null);
-  const navigate = useNavigate();
 
   // Ctrl+K shortcut
   useEffect(() => {
@@ -113,6 +115,16 @@ export function Header({ onAddTask, onMenuToggle }: HeaderProps) {
             className="p-2 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-500 dark:text-zinc-400 transition-colors"
           >
             <ThemeIcon className="w-4 h-4" />
+          </button>
+
+          <span className="hidden md:inline text-sm text-zinc-500 dark:text-zinc-400">{user?.username}</span>
+          <button
+            onClick={() => { logout(); navigate('/login', { replace: true }); }}
+            aria-label="Log out"
+            title="Log out"
+            className="p-2 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-500 dark:text-zinc-400 transition-colors"
+          >
+            <LogOut className="w-4 h-4" />
           </button>
 
           {/* Add Task */}

@@ -12,6 +12,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from app.database.connection import connect_to_mongo, get_db, close_mongo_connection
 from app.services.task_service import TaskService
 from app.services.category_service import CategoryService
+from app.services.auth_service import AuthService
 from app.schemas.task import TaskCreate
 from app.models.enums import Priority, TaskStatus
 
@@ -65,24 +66,28 @@ async def seed():
     await connect_to_mongo()
     db = get_db()
 
+    auth_svc = AuthService(db)
+    user = await auth_svc.get_or_create_seed_user()
+    user_id = str(user["_id"])
+
     # Clear existing data
     await db["tasks"].delete_many({})
     print("Cleared existing tasks")
 
     cat_svc = CategoryService(db)
     await db["categories"].delete_many({})
-    await cat_svc.seed_defaults()
+    await cat_svc.seed_defaults(user_id)
     print("Seeded default categories")
 
     task_svc = TaskService(db)
     for task_data in SAMPLE_TASKS:
         status = task_data.pop("status", "todo")
         create_data = TaskCreate(**task_data)
-        doc = await task_svc.create_task(create_data)
+        doc = await task_svc.create_task(user_id, create_data)
 
         # Mark as completed if needed
         if status == "completed":
-            await task_svc.complete_task(doc["_id"])
+            await task_svc.complete_task(user_id, doc["_id"])
 
     print(f"Seeded {len(SAMPLE_TASKS)} tasks successfully!")
     await close_mongo_connection()

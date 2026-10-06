@@ -47,11 +47,20 @@ def get_db() -> AsyncIOMotorDatabase:
 async def _create_indexes() -> None:
     """Create indexes for performance."""
     db = get_db()
+    users = db["users"]
+    await users.create_index("username", unique=True)
+    await users.create_index("email", unique=True, sparse=True)
+
     tasks = db["tasks"]
+    await tasks.create_index("user_id")
+    await tasks.create_index([("user_id", 1), ("created_at", -1)])
     await tasks.create_index("due_date")
     await tasks.create_index("status")
     await tasks.create_index("category")
     await tasks.create_index("priority")
     await tasks.create_index("created_at")
     await tasks.create_index([("title", "text"), ("description", "text"), ("tags", "text")])
+
+    categories = db["categories"]
+    await categories.create_index([("user_id", 1), ("name", 1)], unique=True)
     logger.info("MongoDB indexes created")

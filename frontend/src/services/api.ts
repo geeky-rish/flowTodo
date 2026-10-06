@@ -2,6 +2,7 @@ import axios, { AxiosError } from 'axios';
 import type {
   Task, TaskCreate, TaskUpdate, TaskListResponse, TaskFilters,
   Category, CategoryCreate, Stats,
+  AuthResponse, User,
 } from '@/types';
 
 const BASE_URL = import.meta.env.VITE_API_URL || '/api';
@@ -12,11 +13,24 @@ const api = axios.create({
   headers: { 'Content-Type': 'application/json' },
 });
 
+const AUTH_TOKEN_KEY = 'flowtodo-access-token';
+const AUTH_EXPIRED_EVENT = 'flowtodo-auth-expired';
+
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem(AUTH_TOKEN_KEY);
+  if (token) config.headers.Authorization = `Bearer ${token}`;
+  return config;
+});
+
 // ── Error Handling ──────────────────────────────────────────────────────────
 
 api.interceptors.response.use(
   (res) => res,
   (error: AxiosError) => {
+    if (error.response?.status === 401) {
+      localStorage.removeItem(AUTH_TOKEN_KEY);
+      window.dispatchEvent(new Event(AUTH_EXPIRED_EVENT));
+    }
     const detail = (error.response?.data as any)?.detail;
     const message =
       typeof detail === 'string'
@@ -27,6 +41,16 @@ api.interceptors.response.use(
     return Promise.reject(new Error(message));
   }
 );
+
+export const authApi = {
+  register: (data: { username: string; email?: string; password: string }) =>
+    api.post<AuthResponse>('/auth/register', data).then((r) => r.data),
+
+  login: (identifier: string, password: string) =>
+    api.post<AuthResponse>('/auth/login', { identifier, password }).then((r) => r.data),
+
+  me: () => api.get<User>('/auth/me').then((r) => r.data),
+};
 
 // ── Health ──────────────────────────────────────────────────────────────────
 

@@ -6,9 +6,7 @@ from fastapi.responses import JSONResponse
 
 from app.core.config import get_settings
 from app.database.connection import connect_to_mongo, close_mongo_connection
-from app.api import tasks, categories, stats
-from app.services.category_service import CategoryService
-from app.database.connection import get_db
+from app.api import tasks, categories, stats, auth
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -20,9 +18,6 @@ async def lifespan(app: FastAPI):
     """Startup and shutdown lifecycle."""
     logger.info("Starting up FlowTodo API…")
     await connect_to_mongo()
-    # Seed default categories
-    cat_svc = CategoryService(get_db())
-    await cat_svc.seed_defaults()
     logger.info("FlowTodo API ready.")
     yield
     logger.info("Shutting down FlowTodo API…")
@@ -71,3 +66,4 @@ async def health_check():
 app.include_router(tasks.router, prefix="/api")
 app.include_router(categories.router, prefix="/api")
 app.include_router(stats.router, prefix="/api")
+app.include_router(auth.router, prefix="/api")

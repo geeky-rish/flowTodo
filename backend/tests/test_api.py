@@ -5,33 +5,7 @@ Uses an in-memory mock depending on environment.
 Run with: pytest tests/ -v
 """
 import pytest
-import pytest_asyncio
-from httpx import AsyncClient, ASGITransport
-from unittest.mock import MagicMock
 from datetime import datetime, timezone
-
-
-@pytest.fixture(scope="session")
-def anyio_backend():
-    return "asyncio"
-
-
-@pytest.fixture(autouse=True)
-def mock_db(monkeypatch):
-    """Provide an in-memory store for tests."""
-    mock_collection = MagicMock()
-    mock_db_instance = MagicMock()
-    mock_db_instance.__getitem__ = lambda self, key: mock_collection
-    monkeypatch.setattr("app.database.connection._db", mock_db_instance)
-    monkeypatch.setattr("app.database.connection._client", MagicMock())
-
-
-@pytest_asyncio.fixture
-async def client():
-    from app.main import app
-    transport = ASGITransport(app=app)
-    async with AsyncClient(transport=transport, base_url="http://test") as ac:
-        yield ac
 
 
 # ── Health ────────────────────────────────────────────────────────────────────
@@ -64,7 +38,7 @@ async def test_create_task(client, monkeypatch):
     fake_id = str(ObjectId())
     now = datetime.now(timezone.utc)
 
-    async def mock_create(self, data):
+    async def mock_create(self, user_id, data):
         return {
             "_id": fake_id,
             **TASK_PAYLOAD,
@@ -100,7 +74,7 @@ async def test_get_tasks(client, monkeypatch):
 @pytest.mark.anyio
 async def test_get_task_not_found(client, monkeypatch):
     """Getting a non-existent task returns 404."""
-    async def mock_get_task(self, task_id):
+    async def mock_get_task(self, user_id, task_id):
         return None
 
     monkeypatch.setattr("app.services.task_service.TaskService.get_task", mock_get_task)
@@ -116,7 +90,7 @@ async def test_update_task(client, monkeypatch):
     fake_id = str(ObjectId())
     now = datetime.now(timezone.utc)
 
-    async def mock_update(self, task_id, data):
+    async def mock_update(self, user_id, task_id, data):
         return {
             "_id": fake_id,
             **TASK_PAYLOAD,
@@ -141,7 +115,7 @@ async def test_complete_task(client, monkeypatch):
     fake_id = str(ObjectId())
     now = datetime.now(timezone.utc)
 
-    async def mock_complete(self, task_id):
+    async def mock_complete(self, user_id, task_id):
         return {
             "_id": fake_id,
             **TASK_PAYLOAD,
@@ -165,7 +139,7 @@ async def test_delete_task(client, monkeypatch):
     from bson import ObjectId
     fake_id = str(ObjectId())
 
-    async def mock_delete(self, task_id):
+    async def mock_delete(self, user_id, task_id):
         return True
 
     monkeypatch.setattr("app.services.task_service.TaskService.delete_task", mock_delete)
@@ -177,7 +151,7 @@ async def test_delete_task(client, monkeypatch):
 @pytest.mark.anyio
 async def test_get_tasks_by_date(client, monkeypatch):
     """Date-based task retrieval works correctly."""
-    async def mock_get_by_date(self, date_str):
+    async def mock_get_by_date(self, user_id, date_str):
         return []
 
     monkeypatch.setattr("app.services.task_service.TaskService.get_tasks_by_date", mock_get_by_date)

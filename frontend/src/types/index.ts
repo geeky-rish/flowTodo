@@ -50,6 +50,19 @@ export interface TaskFilters {
   sort_order?: 1 | -1;
 }
 
+export interface User {
+  _id: string;
+  username: string;
+  email?: string;
+  created_at: string;
+}
+
+export interface AuthResponse {
+  access_token: string;
+  token_type: string;
+  user: User;
+}
+
 // ── Category Types ──────────────────────────────────────────────────────────
 
 export interface Category {

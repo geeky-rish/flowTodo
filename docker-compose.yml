@@ -12,6 +12,7 @@ services:
       - MONGODB_URI=${MONGODB_URI}
       - MONGODB_DATABASE=${MONGODB_DATABASE:-flowtodo}
       - CORS_ORIGINS=${CORS_ORIGINS:-http://localhost:5173}
+      - JWT_SECRET=${JWT_SECRET}
     env_file:
       - ./backend/.env
     restart: unless-stopped
