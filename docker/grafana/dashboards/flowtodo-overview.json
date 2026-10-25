@@ -1,0 +1,342 @@
+{
+  "dashboard": {
+    "annotations": {
+      "list": [
+        {
+          "builtIn": 1,
+          "datasource": "-- Grafana --",
+          "enable": true,
+          "hide": true,
+          "iconColor": "rgba(0, 211, 255, 1)",
+          "name": "Annotations & Alerts",
+          "type": "dashboard"
+        }
+      ]
+    },
+    "editable": true,
+    "gnetId": null,
+    "graphTooltip": 0,
+    "id": 1,
+    "links": [],
+    "panels": [
+      {
+        "datasource": "Prometheus",
+        "fieldConfig": {
+          "defaults": {
+            "color": {"mode": "thresholds"},
+            "mappings": [],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"color": "green", "value": null},
+                {"color": "red", "value": 1}
+              ]
+            },
+            "unit": "short"
+          },
+          "overrides": []
+        },
+        "gridPos": {"h": 4, "w": 6, "x": 0, "y": 0},
+        "id": 1,
+        "options": {"colorMode": "value", "graphMode": "area", "justifyMode": "auto"},
+        "pluginVersion": "8.0.0",
+        "targets": [
+          {
+            "expr": "up{job=\"flowtodo-backend\"}",
+            "legendFormat": "Backend",
+            "refId": "A"
+          }
+        ],
+        "title": "Backend Status",
+        "type": "stat"
+      },
+      {
+        "datasource": "Prometheus",
+        "fieldConfig": {
+          "defaults": {
+            "color": {"mode": "thresholds"},
+            "mappings": [],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"color": "green", "value": null},
+                {"color": "yellow", "value": 0.5},
+                {"color": "red", "value": 1}
+              ]
+            },
+            "unit": "reqps"
+          },
+          "overrides": []
+        },
+        "gridPos": {"h": 4, "w": 6, "x": 6, "y": 0},
+        "id": 2,
+        "options": {"colorMode": "value", "graphMode": "area", "justifyMode": "auto"},
+        "pluginVersion": "8.0.0",
+        "targets": [
+          {
+            "expr": "sum(rate(http_requests_total[5m]))",
+            "legendFormat": "Total RPS",
+            "refId": "A"
+          }
+        ],
+        "title": "Request Rate",
+        "type": "stat"
+      },
+      {
+        "datasource": "Prometheus",
+        "fieldConfig": {
+          "defaults": {
+            "color": {"mode": "thresholds"},
+            "mappings": [],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"color": "green", "value": null},
+                {"color": "yellow", "value": 0.01},
+                {"color": "red", "value": 0.05}
+              ]
+            },
+            "unit": "percentunit"
+          },
+          "overrides": []
+        },
+        "gridPos": {"h": 4, "w": 6, "x": 12, "y": 0},
+        "id": 3,
+        "options": {"colorMode": "value", "graphMode": "area", "justifyMode": "auto"},
+        "pluginVersion": "8.0.0",
+        "targets": [
+          {
+            "expr": "sum(rate(http_requests_total{status_code=~\"5..\"}[5m])) / sum(rate(http_requests_total[5m]))",
+            "legendFormat": "Error Rate",
+            "refId": "A"
+          }
+        ],
+        "title": "Error Rate",
+        "type": "stat"
+      },
+      {
+        "datasource": "Prometheus",
+        "fieldConfig": {
+          "defaults": {
+            "color": {"mode": "thresholds"},
+            "mappings": [],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"color": "green", "value": null},
+                {"color": "yellow", "value": 0.5},
+                {"color": "red", "value": 1}
+              ]
+            },
+            "unit": "s"
+          },
+          "overrides": []
+        },
+        "gridPos": {"h": 4, "w": 6, "x": 18, "y": 0},
+        "id": 4,
+        "options": {"colorMode": "value", "graphMode": "area", "justifyMode": "auto"},
+        "pluginVersion": "8.0.0",
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[5m])) by (le))",
+            "legendFormat": "P95 Latency",
+            "refId": "A"
+          }
+        ],
+        "title": "P95 Latency",
+        "type": "stat"
+      },
+      {
+        "datasource": "Prometheus",
+        "fieldConfig": {
+          "defaults": {
+            "color": {"mode": "palette-classic"},
+            "custom": {"axisLabel": "", "axisPlacement": "auto", "barAlignment": 0, "drawStyle": "line", "fillOpacity": 10, "gradientMode": "none", "hideFrom": {"tooltip": false, "viz": false, "legend": false}, "lineInterpolation": "linear", "lineWidth": 1, "pointSize": 5, "scaleDistribution": {"type": "linear"}, "showPoints": "never", "spanNulls": true},
+            "mappings": [],
+            "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}]},
+            "unit": "reqps"
+          },
+          "overrides": []
+        },
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 4},
+        "id": 5,
+        "options": {"legend": {"calcs": [], "displayMode": "list", "placement": "bottom"}, "tooltip": {"mode": "single"}},
+        "pluginVersion": "8.0.0",
+        "targets": [
+          {
+            "expr": "sum(rate(http_requests_total[5m])) by (method, endpoint)",
+            "legendFormat": "{{method}} {{endpoint}}",
+            "refId": "A"
+          }
+        ],
+        "title": "Request Rate by Endpoint",
+        "type": "timeseries"
+      },
+      {
+        "datasource": "Prometheus",
+        "fieldConfig": {
+          "defaults": {
+            "color": {"mode": "palette-classic"},
+            "custom": {"axisLabel": "", "axisPlacement": "auto", "barAlignment": 0, "drawStyle": "line", "fillOpacity": 10, "gradientMode": "none", "hideFrom": {"tooltip": false, "viz": false, "legend": false}, "lineInterpolation": "linear", "lineWidth": 1, "pointSize": 5, "scaleDistribution": {"type": "linear"}, "showPoints": "never", "spanNulls": true},
+            "mappings": [],
+            "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}]},
+            "unit": "s"
+          },
+          "overrides": []
+        },
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 4},
+        "id": 6,
+        "options": {"legend": {"calcs": [], "displayMode": "list", "placement": "bottom"}, "tooltip": {"mode": "single"}},
+        "pluginVersion": "8.0.0",
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[5m])) by (le, endpoint))",
+            "legendFormat": "P95 {{endpoint}}",
+            "refId": "A"
+          }
+        ],
+        "title": "Latency by Endpoint (P95)",
+        "type": "timeseries"
+      },
+      {
+        "datasource": "Prometheus",
+        "fieldConfig": {
+          "defaults": {
+            "color": {"mode": "palette-classic"},
+            "custom": {"axisLabel": "", "axisPlacement": "auto", "barAlignment": 0, "drawStyle": "line", "fillOpacity": 10, "gradientMode": "none", "hideFrom": {"tooltip": false, "viz": false, "legend": false}, "lineInterpolation": "linear", "lineWidth": 1, "pointSize": 5, "scaleDistribution": {"type": "linear"}, "showPoints": "never", "spanNulls": true},
+            "mappings": [],
+            "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}]},
+            "unit": "ops"
+          },
+          "overrides": []
+        },
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 12},
+        "id": 7,
+        "options": {"legend": {"calcs": [], "displayMode": "list", "placement": "bottom"}, "tooltip": {"mode": "single"}},
+        "pluginVersion": "8.0.0",
+        "targets": [
+          {
+            "expr": "sum(rate(db_queries_total[5m])) by (operation, collection)",
+            "legendFormat": "{{operation}} {{collection}}",
+            "refId": "A"
+          }
+        ],
+        "title": "Database Query Rate",
+        "type": "timeseries"
+      },
+      {
+        "datasource": "Prometheus",
+        "fieldConfig": {
+          "defaults": {
+            "color": {"mode": "palette-classic"},
+            "custom": {"axisLabel": "", "axisPlacement": "auto", "barAlignment": 0, "drawStyle": "line", "fillOpacity": 10, "gradientMode": "none", "hideFrom": {"tooltip": false, "viz": false, "legend": false}, "lineInterpolation": "linear", "lineWidth": 1, "pointSize": 5, "scaleDistribution": {"type": "linear"}, "showPoints": "never", "spanNulls": true},
+            "mappings": [],
+            "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}]},
+            "unit": "s"
+          },
+          "overrides": []
+        },
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 12},
+        "id": 8,
+        "options": {"legend": {"calcs": [], "displayMode": "list", "placement": "bottom"}, "tooltip": {"mode": "single"}},
+        "pluginVersion": "8.0.0",
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.95, sum(rate(db_query_duration_seconds_bucket[5m])) by (le, operation, collection))",
+            "legendFormat": "P95 {{operation}} {{collection}}",
+            "refId": "A"
+          }
+        ],
+        "title": "Database Latency (P95)",
+        "type": "timeseries"
+      },
+      {
+        "datasource": "Prometheus",
+        "fieldConfig": {
+          "defaults": {
+            "color": {"mode": "thresholds"},
+            "mappings": [{"type": "value", "options": {"0": {"color": "green", "index": 0}, "1": {"color": "red", "index": 1}}}],
+            "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}]},
+            "unit": "short"
+          },
+          "overrides": []
+        },
+        "gridPos": {"h": 4, "w": 6, "x": 0, "y": 20},
+        "id": 9,
+        "options": {"colorMode": "value", "graphMode": "area", "justifyMode": "auto"},
+        "pluginVersion": "8.0.0",
+        "targets": [
+          {
+            "expr": "sum(task_operations_total) by (operation)",
+            "legendFormat": "{{operation}}",
+            "refId": "A"
+          }
+        ],
+        "title": "Task Operations",
+        "type": "stat"
+      },
+      {
+        "datasource": "Prometheus",
+        "fieldConfig": {
+          "defaults": {
+            "color": {"mode": "thresholds"},
+            "mappings": [],
+            "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}]},
+            "unit": "short"
+          },
+          "overrides": []
+        },
+        "gridPos": {"h": 4, "w": 6, "x": 6, "y": 20},
+        "id": 10,
+        "options": {"colorMode": "value", "graphMode": "area", "justifyMode": "auto"},
+        "pluginVersion": "8.0.0",
+        "targets": [
+          {
+            "expr": "user_registrations_total",
+            "legendFormat": "Registrations",
+            "refId": "A"
+          }
+        ],
+        "title": "User Registrations",
+        "type": "stat"
+      },
+      {
+        "datasource": "Prometheus",
+        "fieldConfig": {
+          "defaults": {
+            "color": {"mode": "thresholds"},
+            "mappings": [],
+            "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}]},
+            "unit": "short"
+          },
+          "overrides": []
+        },
+        "gridPos": {"h": 4, "w": 6, "x": 12, "y": 20},
+        "id": 11,
+        "options": {"colorMode": "value", "graphMode": "area", "justifyMode": "auto"},
+        "pluginVersion": "8.0.0",
+        "targets": [
+          {
+            "expr": "sum(user_logins_total) by (success)",
+            "legendFormat": "Success={{success}}",
+            "refId": "A"
+          }
+        ],
+        "title": "User Logins",
+        "type": "stat"
+      }
+    ],
+    "refresh": "10s",
+    "schemaVersion": 27,
+    "style": "dark",
+    "tags": ["flowtodo", "overview"],
+    "templating": {"list": []},
+    "time": {"from": "now-1h", "to": "now"},
+    "timepicker": {},
+    "timezone": "",
+    "title": "FlowTodo Overview",
+    "uid": "flowtodo-overview",
+    "version": 1
+  },
+  "overwrite": true
+}

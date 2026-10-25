@@ -1,0 +1,125 @@
+groups:
+  - name: flowtodo-alerts
+    interval: 30s
+    rules:
+      # High error rate alert
+      - alert: HighErrorRate
+        expr: |
+          sum(rate(http_requests_total{status_code=~"5.."}[5m])) by (service)
+          /
+          sum(rate(http_requests_total[5m])) by (service)
+          > 0.05
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "High error rate detected"
+          description: "Error rate for {{ $labels.service }} is above 5% for 2 minutes"
+          runbook_url: "https://github.com/geeky-rish/flowTodo/blob/main/docs/runbooks/high-error-rate.md"
+
+      # High latency alert
+      - alert: HighLatency
+        expr: |
+          histogram_quantile(0.95,
+            sum(rate(http_request_duration_seconds_bucket[5m])) by (le, service)
+          ) > 1
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High latency detected"
+          description: "95th percentile latency for {{ $labels.service }} is above 1 second for 5 minutes"
+          runbook_url: "https://github.com/geeky-rish/flowTodo/blob/main/docs/runbooks/high-latency.md"
+
+      # Database connection failures
+      - alert: DatabaseConnectionFailures
+        expr: |
+          rate(db_queries_total{operation=~"find|insert|update|delete"}[5m]) == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Database connection failure"
+          description: "No database queries detected for 1 minute - possible connection issue"
+          runbook_url: "https://github.com/geeky-rish/flowTodo/blob/main/docs/runbooks/db-connection-failure.md"
+
+      # High database latency
+      - alert: HighDatabaseLatency
+        expr: |
+          histogram_quantile(0.95,
+            sum(rate(db_query_duration_seconds_bucket[5m])) by (le, operation, collection)
+          ) > 0.5
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High database latency"
+          description: "95th percentile database query latency is above 500ms for 5 minutes"
+          runbook_url: "https://github.com/geeky-rish/flowTodo/blob/main/docs/runbooks/high-db-latency.md"
+
+      # Service down
+      - alert: ServiceDown
+        expr: |
+          up{job="flowtodo-backend"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Service is down"
+          description: "FlowTodo backend has been down for 1 minute"
+          runbook_url: "https://github.com/geeky-rish/flowTodo/blob/main/docs/runbooks/service-down.md"
+
+      # High memory usage
+      - alert: HighMemoryUsage
+        expr: |
+          (container_memory_usage_bytes{container="flowtodo-backend"} / container_spec_memory_limit_bytes{container="flowtodo-backend"}) > 0.85
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High memory usage"
+          description: "Backend memory usage is above 85% of limit for 5 minutes"
+
+      # High CPU usage
+      - alert: HighCPUUsage
+        expr: |
+          rate(container_cpu_usage_seconds_total{container="flowtodo-backend"}[5m]) > 0.8
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High CPU usage"
+          description: "Backend CPU usage is above 80% for 10 minutes"
+
+      # Low disk space
+      - alert: LowDiskSpace
+        expr: |
+          (node_filesystem_avail_bytes{mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"}) < 0.1
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Low disk space"
+          description: "Disk space is below 10% on root filesystem"
+
+      # Authentication failures spike
+      - alert: AuthFailureSpike
+        expr: |
+          rate(user_logins_total{success="false"}[5m]) > 10
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Authentication failure spike"
+          description: "More than 10 failed login attempts per second for 2 minutes - possible brute force attack"
+
+      # Task operation failures
+      - alert: TaskOperationFailures
+        expr: |
+          rate(task_operations_total{status="error"}[5m]) > 1
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Task operation failures"
+          description: "Task operations failing at rate > 1 per second for 2 minutes"

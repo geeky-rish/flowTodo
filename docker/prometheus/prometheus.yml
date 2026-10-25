@@ -1,0 +1,42 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    cluster: 'flowtodo-local'
+    environment: 'development'
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: ['alertmanager:9093']
+
+rule_files:
+  - 'alert_rules.yml'
+
+scrape_configs:
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  - job_name: 'flowtodo-backend'
+    static_configs:
+      - targets: ['backend:8000']
+    metrics_path: '/metrics'
+
+  - job_name: 'flowtodo-oncall-agent'
+    static_configs:
+      - targets: ['oncall-agent:8080']
+
+  - job_name: 'mongodb'
+    static_configs:
+      - targets: ['mongodb:27017']
+
+  - job_name: 'node-exporter'
+    static_configs:
+      - targets: ['host.docker.internal:9100']
+    # Note: node-exporter needs to be run separately on host
+
+  - job_name: 'cadvisor'
+    static_configs:
+      - targets: ['host.docker.internal:8080']
+    # Note: cadvisor needs to be run separately on host

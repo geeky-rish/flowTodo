@@ -20,6 +20,18 @@ class Settings(BaseSettings):
     JWT_ALGORITHM: str = "HS256"
     JWT_EXPIRE_MINUTES: int = 60
 
+    # Observability
+    OTEL_EXPORTER_OTLP_ENDPOINT: str = ""
+    OTEL_SERVICE_NAME: str = "flowtodo-api"
+    PROMETHEUS_PORT: int = 9090
+
+    # Alerting
+    ALERT_WEBHOOK_URL: str = ""
+    ALERT_EMAIL: str = ""
+
+    # Admin
+    ADMIN_TOKEN: str = ""
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",
