@@ -88,6 +88,12 @@ export interface DailyStats {
   created: number;
 }
 
+export interface CategoryDistributionItem {
+  category: string;
+  count: number;
+  color: string;
+}
+
 export interface Stats {
   total_tasks: number;
   completed_today: number;
@@ -99,6 +105,7 @@ export interface Stats {
   high_priority_completion_rate: number;
   daily_stats: DailyStats[];
   streak: number;
+  category_distribution?: CategoryDistributionItem[];
 }
 
 // ── UI Types ────────────────────────────────────────────────────────────────

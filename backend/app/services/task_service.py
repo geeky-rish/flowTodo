@@ -171,6 +171,34 @@ class TaskService:
             else:
                 break
 
+        # Category distribution
+        pipeline = [
+            {"$match": {"user_id": user_id}},
+            {"$group": {"_id": "$category", "count": {"$sum": 1}}},
+            {"$sort": {"count": -1}},
+        ]
+        cat_cursor = self.collection.aggregate(pipeline)
+        cat_results = await cat_cursor.to_list(length=None)
+
+        # Get category colors from categories collection
+        cat_names = [r["_id"] for r in cat_results if r["_id"]]
+        cat_colors = {}
+        if cat_names:
+            from app.database.connection import get_db
+            db = get_db()
+            cats_cursor = db["categories"].find({"user_id": user_id, "name": {"$in": cat_names}})
+            async for cat in cats_cursor:
+                cat_colors[cat["name"]] = cat.get("color", "#6366f1")
+
+        category_distribution = [
+            {
+                "category": r["_id"] or "Uncategorized",
+                "count": r["count"],
+                "color": cat_colors.get(r["_id"] or "Uncategorized", "#9ca3af"),
+            }
+            for r in cat_results
+        ]
+
         return {
             "total_tasks": total,
             "completed_today": completed_today,
@@ -182,4 +210,5 @@ class TaskService:
             "high_priority_completion_rate": hp_rate,
             "daily_stats": daily_stats,
             "streak": streak,
+            "category_distribution": category_distribution,
         }

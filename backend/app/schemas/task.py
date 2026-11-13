@@ -89,6 +89,12 @@ class DailyStats(BaseModel):
     created: int
 
 
+class CategoryDistributionItem(BaseModel):
+    category: str
+    count: int
+    color: str
+
+
 class StatsResponse(BaseModel):
     total_tasks: int
     completed_today: int
@@ -100,6 +106,7 @@ class StatsResponse(BaseModel):
     high_priority_completion_rate: float
     daily_stats: List[DailyStats]
     streak: int
+    category_distribution: List[CategoryDistributionItem] = []
 
 
 # ── Generic Response ──────────────────────────────────────────────────────────

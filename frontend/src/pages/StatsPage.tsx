@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react';
-import { BarChart2, TrendingUp, Zap, CheckCircle2, Target, Flame } from 'lucide-react';
+import { BarChart2, TrendingUp, Zap, CheckCircle2, Target, Flame, PieChart } from 'lucide-react';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, LineChart, Line, Legend,
+  PieChart as RechartsPieChart, Pie, Cell,
 } from 'recharts';
 import { statsApi } from '@/services/api';
 import { format, parseISO } from 'date-fns';
-import type { Stats } from '@/types';
+import type { Stats, CategoryDistributionItem } from '@/types';
 
 function StatBlock({ icon: Icon, label, value, sublabel, color }: {
   icon: typeof CheckCircle2;
@@ -37,6 +38,19 @@ const CustomTooltip = ({ active, payload, label }: any) => {
         {payload.map((p: any) => (
           <p key={p.name} style={{ color: p.color }}>{p.name}: {p.value}</p>
         ))}
+      </div>
+    );
+  }
+  return null;
+};
+
+const PieTooltip = ({ active, payload }: any) => {
+  if (active && payload?.length) {
+    const p = payload[0];
+    return (
+      <div className="bg-white dark:bg-surface-850 border border-zinc-200 dark:border-zinc-700 rounded-lg p-3 shadow-lg text-xs">
+        <p className="font-medium text-zinc-700 dark:text-zinc-300 mb-1">{p.name}</p>
+        <p style={{ color: p.color }}>{p.value} tasks ({(p.percent * 100).toFixed(1)}%)</p>
       </div>
     );
   }
@@ -139,6 +153,44 @@ export function StatsPage() {
           </LineChart>
         </ResponsiveContainer>
       </div>
+
+      {/* Chart: Category Distribution */}
+      {stats.category_distribution && stats.category_distribution.length > 0 && (
+        <div className="card p-4">
+          <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 mb-4 flex items-center gap-2">
+            <PieChart className="w-4 h-4 text-primary-600" />
+            Category Distribution
+          </h2>
+          <ResponsiveContainer width="100%" height={250}>
+            <RechartsPieChart>
+              <Pie
+                data={stats.category_distribution}
+                cx="50%"
+                cy="50%"
+                innerRadius={60}
+                outerRadius={100}
+                dataKey="count"
+                nameKey="category"
+                label={(props: { name?: string; percent?: number }) => `${props.name ?? ''} ${((props.percent ?? 0) * 100).toFixed(0)}%`}
+                labelLine={false}
+                stroke="white"
+                strokeWidth={2}
+              >
+                {stats.category_distribution.map((cat: CategoryDistributionItem, i: number) => (
+                  <Cell key={cat.category} fill={cat.color} />
+                ))}
+              </Pie>
+              <Tooltip content={<PieTooltip />} />
+              <Legend
+                wrapperStyle={{ paddingTop: 10, fontSize: 12 }}
+                layout="vertical"
+                align="right"
+                verticalAlign="middle"
+              />
+            </RechartsPieChart>
+          </ResponsiveContainer>
+        </div>
+      )}
     </div>
   );
 }

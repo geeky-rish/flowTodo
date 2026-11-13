@@ -8,21 +8,21 @@ import { useTheme } from '@/hooks/useTheme'
 // Mock the API services
 vi.mock('@/services/api', () => ({
   taskApi: {
-    list: vi.fn(),
-    create: vi.fn(),
-    update: vi.fn(),
-    delete: vi.fn(),
-    complete: vi.fn(),
-    byDate: vi.fn(),
+    list: vi.fn<Promise<{ tasks: any[]; total: number }>>(),
+    create: vi.fn<Promise<any>>(),
+    update: vi.fn<Promise<any>>(),
+    delete: vi.fn<Promise<any>>(),
+    complete: vi.fn<Promise<any>>(),
+    byDate: vi.fn<Promise<any>>(),
   },
   categoryApi: {
-    list: vi.fn(),
-    create: vi.fn(),
-    update: vi.fn(),
-    delete: vi.fn(),
+    list: vi.fn<Promise<any[]>>(),
+    create: vi.fn<Promise<any>>(),
+    update: vi.fn<Promise<any>>(),
+    delete: vi.fn<Promise<any>>(),
   },
   statsApi: {
-    get: vi.fn(),
+    get: vi.fn<Promise<any>>(),
   },
 }))
 
