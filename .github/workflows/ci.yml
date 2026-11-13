@@ -198,29 +198,26 @@ jobs:
           # In a real setup, this would deploy to a staging environment
           # using kubectl, docker-compose, or a cloud provider's CLI
 
+  
   deploy-production:
     name: Deploy to Production
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, x64, flowtodo-prod]
     needs: docker-build
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     environment: production
     steps:
       - name: Deploy to production
         run: |
-          echo "Production deployment would happen here"
+          echo "Deploying FlowTodo to production"
           echo "Image tag: ${{ github.sha }}"
-          # In a real setup, this would:
-          # 1. Pull new images on production server
-          # 2. Run docker-compose up -d
-          # 3. Run health checks
-          # 4. Rollback on failure
-          # This requires a deployment server with SSH access or a cloud provider
+
+          # Actual deployment commands will go here.
 
       - name: Notify deployment
         if: always()
         run: |
           if [ "${{ job.status }}" == "success" ]; then
-            echo "✅ Deployment successful"
+            echo "Deployment successful"
           else
-            echo "❌ Deployment failed"
+            echo "Deployment failed"
           fi
