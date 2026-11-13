@@ -166,25 +166,37 @@ jobs:
           # using kubectl, docker-compose, or a cloud provider's CLI
 
   
+  
   deploy-production:
     name: Deploy to Production
     runs-on: [self-hosted, linux, x64, flowtodo-prod]
     needs: docker-build
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     environment: production
+    permissions:
+      contents: read
+      packages: read
+
     steps:
-      - name: Deploy to production
-        run: |
-          echo "Deploying FlowTodo to production"
-          echo "Image tag: ${{ github.sha }}"
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-          # Actual deployment commands will go here.
-
-      - name: Notify deployment
-        if: always()
+      - name: Login to GitHub Container Registry
         run: |
-          if [ "${{ job.status }}" == "success" ]; then
-            echo "Deployment successful"
-          else
-            echo "Deployment failed"
-          fi
+          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io \
+            -u "${{ github.actor }}" --password-stdin
+
+      - name: Deploy FlowTodo
+        env:
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          set -e
+
+          cd /home/unknown92/flowTodo
+
+          docker compose -p flowtodo pull
+          docker compose -p flowtodo up -d --remove-orphans
+
+      - name: Verify deployment
+        run: |
+          docker compose -p flowtodo ps
